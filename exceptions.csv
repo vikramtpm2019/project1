@@ -1,9 +1,0 @@
-check_name,customer_id,detail_date,detail
-DUPLICATE_EVENT,C002,2026-09-10,event E00074 appears 2 times
-NO_CONTRACT,C099,2026-09-05,"5400 units on 3 days, no contract on file"
-USAGE_AFTER_END,C004,2026-09-16,15 days of usage after 2026-09-15
-NEGATIVE_UNITS,C007,2026-09-22,units = -900
-SPIKE,C005,2026-09-18,"17100 units vs baseline 1928 (8.9x), excess 15171 units"
-MISSING_DAYS,C006,2026-09-11,3 missing day(s) between 2026-09-11 and 2026-09-15
-INVOICE_MISMATCH,C001,2026-09,"billed 2675 vs expected 2500.0 (diff 175.0), clean usage 96288 units vs 100000 included, billed units 96288"
-INVOICE_MISMATCH,C003,2026-09,"billed 3820 vs expected 4200.0 (diff -380.0), clean usage 191954 units vs 200000 included, billed units 191954"
