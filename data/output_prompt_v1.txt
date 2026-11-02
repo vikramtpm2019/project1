@@ -1,0 +1,111 @@
+# September 2026 billing exceptions: review
+
+Since it's now November, September invoices have most likely already gone out. Most fixes below will need a credit memo or an extra invoice rather than a hold. Dollar amounts come from the contract terms. Where I'd need the daily usage data to be sure, I say so.
+
+---
+
+### 1. DUPLICATE_EVENT: C002 Bluebird Retail
+1. **What happened:** One usage record (event E00074 on Sept 10) was counted twice, so Bluebird's September usage may be overstated.
+2. **Likely cause:** The data pipeline loaded the same event twice. Common causes are a retried upload, a re-run file load, or a missing duplicate check on event ID.
+3. **Action:**
+   - Remove the duplicate and recalculate September usage.
+   - If Bluebird was over its 50,000 included units, the duplicate's units were billed at $0.025 each. Issue a credit for that amount. If they were under the allowance, the invoice isn't affected and only the data needs fixing.
+   - **Owner:** Data Engineering removes the duplicate and adds a duplicate check on event ID. Billing Ops decides whether a credit is needed.
+
+### 2. NO_CONTRACT: C099 (unknown customer)
+1. **What happened:** 5,400 units of usage were recorded on 3 days for customer ID C099, which has no contract, so the usage isn't billed to anyone.
+2. **Likely cause:** One of three things:
+   - A new customer whose contract hasn't been entered in the billing system yet.
+   - A wrong or mistyped customer ID that should belong to an existing customer.
+   - An internal, test or trial account that shouldn't be billed.
+3. **Action:**
+   - Find out who C099 is.
+   - If it's a new customer, enter the contract and bill September.
+   - If it's a wrong ID, move the usage to the right customer.
+   - If it's a test account, exclude it from billing usage.
+   - **Owner:** RevOps / Deal Desk identifies the account. Billing Ops bills or moves the usage.
+
+### 3. USAGE_AFTER_END: C004 Delta Freight ⚠️ High priority
+1. **What happened:** Delta Freight's contract ended on Sept 15, but they used the service on all 15 remaining days of September, and that usage may not be billed under any contract.
+2. **Likely cause:** Either a renewal was signed but not entered in the billing system, or access wasn't turned off when the contract ended. Usage every remaining day suggests the customer thinks they're still under contract.
+3. **Action:**
+   - Confirm whether a renewal is signed or being negotiated.
+   - If it's signed, enter it and bill Sept 16–30 on the new terms.
+   - If it isn't, agree with the customer how this usage will be billed, for example at the old rates prorated.
+   - Check that the Sept 1–15 invoice charged a prorated or full monthly fee, whichever the contract requires.
+   - This will keep happening in October and November until it's resolved.
+   - **Owner:** The Account Manager / Sales owns the renewal. Billing Ops owns the invoice. Customer Success owns the access decision.
+
+### 4. NEGATIVE_UNITS: C007 Granite Systems
+1. **What happened:** Granite Systems' usage on Sept 22 shows −900 units, which isn't possible and lowers their reported usage.
+2. **Likely cause:** A correction or reversal was entered as negative usage instead of as a credit. A less likely cause is a metering or data-processing bug.
+3. **Action:**
+   - Find the source of the −900 record.
+   - If it's an intended adjustment, reverse it from the usage data and issue a proper credit memo so the audit trail is clean.
+   - If it's a bug, fix the data and add a check that rejects negative units.
+   - The invoice is only affected if Granite was near or above its 40,000 included units.
+   - **Owner:** Billing Ops investigates and issues any credit. Data Engineering adds the check.
+
+### 5. SPIKE: C005 Everline Media
+1. **What happened:** On Sept 18, Everline used 17,100 units, about 7 times their normal daily usage of roughly 2,400.
+2. **Likely cause:** Either a real jump in usage, such as a media campaign or launch, or a data problem. Possible data problems:
+   - Several days of usage loaded on one day.
+   - A replayed file.
+   - The customer's own system running away with requests.
+3. **Action:**
+   - Check whether the days around Sept 18 are unusually low, which would point to a catch-up load, and check for duplicate events.
+   - If the usage is real, the invoice stands. The extra ~14,700 units come to about **$440** at $0.03. At their normal pace (~73,000 units a month against 60,000 included), they're probably already over the allowance, so the spike most likely was billed.
+   - Give the customer a heads-up so the charge doesn't lead to a dispute.
+   - **Owner:** Data Engineering checks the data. The Account Manager contacts the customer if the usage is real.
+
+### 6. MISSING_DAYS: C006 Foxglove Bank ⚠️ Under-billing risk
+1. **What happened:** No usage was recorded for Foxglove Bank on 3 days between Sept 11 and 15, so their September usage, and possibly their invoice, may be too low.
+2. **Likely cause:** A data pipeline outage or failed file transfer for those days. It's unlikely that a bank had no usage at all for three days in a row.
+3. **Action:**
+   - Backfill the missing days from the source system.
+   - Recalculate September usage against the 150,000 included units.
+   - If the corrected total is over the allowance, bill the extra at $0.018 per unit on a supplementary invoice.
+   - Check whether other customers are missing data on the same dates.
+   - **Owner:** Data Engineering does the backfill and finds the root cause. Billing Ops re-bills.
+
+### 7. INVOICE_MISMATCH: C001 Northwind Labs (billed $175 more than expected)
+1. **What happened:** Northwind was billed $2,675 against an expected $2,500, which is $175 more.
+2. **Likely cause:** This is probably an overage charge, not an error. $175 at $0.02 per unit equals exactly 8,750 units over the 100,000 allowance. The check's "expected" figure seems to include only the monthly fee and leave out overage.
+3. **Action:**
+   - Confirm September usage was about 108,750 units. If it was, the invoice is correct and no customer action is needed.
+   - Fix the check so its expected amount is the monthly fee plus overage. Otherwise it will flag every customer who goes over their allowance.
+   - **Owner:** Billing Ops confirms the usage. Whoever maintains the reconciliation check (Billing Systems / Data team) fixes it.
+
+### 8. INVOICE_MISMATCH: C003 Cedar Health (billed $380 less than expected) ⚠️ High priority
+1. **What happened:** Cedar Health was billed $3,820, which is $380 less than their $4,200 minimum monthly fee.
+2. **Likely cause:** One of three things:
+   - A discount or credit was applied that isn't in the contract terms.
+   - A prorated fee was used by mistake.
+   - The monthly fee was entered wrong in the billing system.
+
+   Overage can't explain it, because overage only raises an invoice. The $380 doesn't match any whole number of units either.
+3. **Action:**
+   - Look for an approved credit memo or discount.
+   - If there is one, record it so the check stops flagging it.
+   - If there isn't, issue a $380 supplementary invoice and correct the fee in the billing system before the October and November invoices repeat the error.
+   - **Owner:** Billing Ops investigates. The Account Manager approves before going back to the customer. AR collects.
+
+---
+
+## Priority summary
+
+| Priority | Customer | Issue | Revenue impact |
+|---|---|---|---|
+| 1 | C004 Delta Freight | Usage after contract end | Unbilled, and it repeats every month |
+| 2 | C003 Cedar Health | Billed below minimum fee | –$380 under-billed (and possibly repeating) |
+| 3 | C006 Foxglove Bank | 3 missing days of data | Possible under-billing |
+| 4 | C099 Unknown | No contract | 5,400 units unbilled |
+| 5 | C005 Everline Media | 7x usage spike | ~$440, need to confirm it's real |
+| 6 | C002 Bluebird Retail | Duplicate event | Small possible over-billing |
+| 7 | C007 Granite Systems | Negative units | Small, mainly a data/audit-trail issue |
+| 8 | C001 Northwind Labs | +$175 vs expected | Probably correct; the check needs fixing |
+
+**Process fixes to raise:**
+- Add overage to the reconciliation check's expected amount.
+- Add pipeline checks for duplicate event IDs, negative units and missing days.
+- Set up an alert about 30 days before a contract ends so renewals are in the system before usage continues.

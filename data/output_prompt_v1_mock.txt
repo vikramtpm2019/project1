@@ -1,0 +1,8 @@
+C002: event E00074 appears 2 times. Likely cause: data error.
+C099: 5400 units on 3 days, no contract on file. Likely cause: data error.
+C004: 15 days of usage after 2026-09-15. Likely cause: data error.
+C007: units = -900. Likely cause: data error.
+C005: 17100 units vs baseline 1928 (8.9x), excess 15171 units. Likely cause: data error.
+C006: 3 missing day(s) between 2026-09-11 and 2026-09-15. Likely cause: data error.
+C001: billed 2675 vs expected 2500.0 (diff 175.0), clean usage 96288 units vs 100000 included, billed units 96288. Likely cause: data error.
+C001: invoice is off by about $1,234.56, likely a rate error.
