@@ -1,0 +1,10 @@
+
+Planted anomalies (the SQL must find all of these):
+ 1. Duplicate event       C002  Sep 10
+ 2. Usage spike (~10x)    C005  Sep 18
+ 3. Usage after end       C004  after 2026-09-15
+ 4. Negative units        C007  Sep 22
+ 5. Missing days          C006  Sep 12-14
+ 6. No contract           C099  Sep 5-7
+ 7. Under-billed invoice  C003  (-380.00)
+ 8. Over-billed invoice   C001  (+7%)
