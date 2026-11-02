@@ -1,9 +1,0 @@
-customer_id,customer_name,included_units,overage_rate,monthly_fee,contract_end
-C001,North Labs,100000,0.02,2500,2027-03-31
-C002,Bird Retail,50000,0.025,1500,2027-06-30
-C003,Cedar Health,200000,0.015,4200,2027-01-31
-C004,Delta Freight,80000,0.02,2000,2026-09-15
-C005,Ever Media,60000,0.03,1800,2027-09-30
-C006,Fox Bank,150000,0.018,3600,2027-02-28
-C007,Granite Systems,40000,0.025,1200,2027-04-30
-C008,Harbor Tiles,70000,0.022,1900,2027-08-31
